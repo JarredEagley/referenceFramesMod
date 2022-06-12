@@ -65,16 +65,16 @@ namespace nubeees_refFrame
                     Vector3D frameVelocity;
 
                     framePosition.X = Double.Parse(words[1]);
-                    framePosition.Y = Double.Parse(words[1]);
-                    framePosition.Z = Double.Parse(words[1]);
-                    //bool valid = Vector3D.TryParse(words[1] + words[2] + words[3], out framePosition);
-                    /*if (!valid)
-                    {
-                        Util.DebugMessage("Failed to parse vector.");
-                        break;
-                    }*/
+                    framePosition.Y = Double.Parse(words[2]);
+                    framePosition.Z = Double.Parse(words[3]);
 
-                    CreateFrameCommand cmd = new CreateFrameCommand(sender, words[0], framePosition, new Vector3D(1.0f, 1.0f, 1.0f), 100.0f);
+                    frameVelocity.X = Double.Parse(words[4]);
+                    frameVelocity.Y = Double.Parse(words[5]);
+                    frameVelocity.Z = Double.Parse(words[6]);
+
+                    float frameRadius = float.Parse(words[7]);
+
+                    CreateFrameCommand cmd = new CreateFrameCommand(sender, words[0], framePosition, frameVelocity, frameRadius);
                     
                     string message = MyAPIGateway.Utilities.SerializeToXML<CreateFrameCommand>(cmd);
                     MyAPIGateway.Multiplayer.SendMessageToServer(Util.MOD_ID, Encoding.Unicode.GetBytes(message));
