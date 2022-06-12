@@ -28,6 +28,18 @@ namespace nubeees_refFrame
         private bool isInitialized = false;
 
 
+        public override void LoadData()
+        {
+            base.LoadData();
+
+        }
+
+        protected override void UnloadData()
+        {
+            base.UnloadData();
+            MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(Util.MOD_ID, AdminCommandHandler);
+        }
+
         private void Init()
         {
             MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(Util.MOD_ID, AdminCommandHandler);
@@ -150,6 +162,8 @@ namespace nubeees_refFrame
 
         private void AdminCommandHandler(ushort handlerID, byte[] package, ulong steamID, bool fromServer)
         {
+            Util.DebugMessage("Serverside received");
+            return;
             Command command = MyAPIGateway.Utilities.SerializeFromXML<Command>(Encoding.Unicode.GetString(package));
 
             // Get the sender player.
