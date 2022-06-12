@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using VRage;
 using VRageMath;
 using VRage.ModAPI;
+using VRage.Game.Components;
+using VRage.Game.ModAPI;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
-using SpaceEngineers.ObjectBuilders;
 using Sandbox.ObjectBuilders;
 using VRage.ObjectBuilders;
 using Sandbox;
 using SpaceEngineers;
+using VRage.Game;
 
 namespace nubeees_refFrame
 {
@@ -19,11 +21,18 @@ namespace nubeees_refFrame
     /// </summary>
     public class FrameEntity
     {
+        // This is the entity this FrameEntity attaches to.
         public IMyEntity entity;
-        public Vector3D apparentVelocity;
-        public Vector3D fakeVelocity; // I don't know if I'll be using this yet.
 
-        public float radius; // Will strongly impact merging behavior.
+        // Total apparent velocity.
+        public Vector3D apparentVelocity;
+
+        // The fake velocity of this entity
+        public Vector3D fakeVelocity;
+
+        // For merging behavior. Big WIP.
+        public float radius; 
+
 
         /// <summary>
         /// Constructor for a FrameEntity wrapper around IMyEntity.
@@ -74,6 +83,18 @@ namespace nubeees_refFrame
         public void UpdateApparentVelocity()
         {
             apparentVelocity = fakeVelocity + entity.Physics.LinearVelocity;
+        }
+
+        public void MakeAllVelocityFake()
+        {
+            SetFakeVelocity(apparentVelocity);
+            SetRealVelocity(Vector3D.Zero);
+        }
+
+        public void MakeAllVelocityReal()
+        {
+            SetRealVelocity(apparentVelocity);
+            SetFakeVelocity(Vector3D.Zero);
         }
     }
 }
