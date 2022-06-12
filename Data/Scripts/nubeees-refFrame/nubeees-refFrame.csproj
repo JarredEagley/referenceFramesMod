@@ -149,6 +149,7 @@
     <Compile Include="FrameEntity.cs" />
     <Compile Include="network\Networking.cs" />
     <Compile Include="network\PacketBase.cs" />
+    <Compile Include="network\PacketSimpleExample.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReferenceFrame.cs" />
     <Compile Include="Server.cs" />
