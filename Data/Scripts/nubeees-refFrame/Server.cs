@@ -16,13 +16,9 @@ using SpaceEngineers;
 using VRage.Game;
 using VRage.Game.ModAPI;
 
-//using nubeees_refFrame.Util;
-
-// TO-DO: SERVER CHECK
-
 namespace nubeees_refFrame
 {
-    [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
+    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation)]
     class Server : MySessionComponentBase
     {
         public List<ReferenceFrame> referenceFrames = new List<ReferenceFrame>(); // Everything lumped into one list right now. Suffling to be done in the future. Priority system will be needed.
@@ -39,7 +35,8 @@ namespace nubeees_refFrame
             Util.DebugMessage("Server init done!");
         }
 
-        public override void UpdateAfterSimulation()
+
+        public override void UpdateBeforeSimulation()
         {
             if (MyAPIGateway.Session == null)
                 return;
@@ -47,7 +44,6 @@ namespace nubeees_refFrame
             var isHost = MyAPIGateway.Session.OnlineMode == MyOnlineModeEnum.OFFLINE
                 || MyAPIGateway.Multiplayer.IsServer;
             //var isDedicatedHost = isHost && MyAPIGateway.Utilities.IsDedicated;
-
 
             try
             {
