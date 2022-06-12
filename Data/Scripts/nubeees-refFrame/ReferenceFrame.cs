@@ -20,22 +20,17 @@ namespace nubeees_refFrame
 
         public List<IMyEntity> effectedEntities = new List<IMyEntity>();   
         public List<EffectorEntity> effectorEntities = new List<EffectorEntity>();  // Entities which help define the reference frame. Can be empty. 
-        // ^ this might need to become a dictionary. It's in a place of uncertainty currently.
 
-        // TODO
-        //private const float decayTime = 1000; // Maybe data drive eventually?
-        //private float decayTimer = 0;
+        // No acceleration terms yet.
 
         // Data which defines behavior of the reference frame.
         public float radius;
-        public float radiusSquared; // TO-DO
+        // public float radiusSquared;
         public Vector3D position;
         public Vector3D velocity;
-        // public Vector3D acceleration; // Not sure I'll use this??
 
         private Vector3D deltaVelocity;
         private Vector3D deltaPositon;
-        // private Vector3 deltaAcceleration;
 
         // Constructors
         public ReferenceFrame(Vector3D pos, Vector3D vel, float _radius)
