@@ -96,7 +96,7 @@ namespace nubeees_refFrame
             foreach (ReferenceFrame frame in referenceFrames)
             {
                 // literally just the draw loop now. Will probably be tossed out later.
-                //frame.Update();
+                frame.Update();
             }
         }
 
@@ -106,29 +106,17 @@ namespace nubeees_refFrame
             foreach (ReferenceFrame frame in referenceFrames)
             {
                 var bound = new BoundingSphereD(frame.position, frame.radius);
-                List<IMyEntity> entitiesinrange = MyAPIGateway.Entities.GetTopMostEntitiesInSphere(ref bound);
-
-                MatrixD testrotationmtx = MatrixD.CreateRotationX(0.0004);
-                MatrixD testtranslmtx = MatrixD.CreateTranslation(frame.position);
-                MatrixD testinvtrans = MatrixD.Invert(testtranslmtx);
+                List<IMyEntity> entitiesinrange = MyAPIGateway.Entities.GetEntitiesInSphere(ref bound);
 
                 foreach(var ent in entitiesinrange)
                 {
-                    //ent.PositionComp.SetPosition(ent.PositionComp.GetPosition() + new Vector3D(0.0,0.0,1.0));
-
-                    ent.WorldMatrix *= testtranslmtx * testrotationmtx * testinvtrans;
-                    ent.WorldMatrix.Orthogonalize();
-
-                    var distfromaxis = Math.Sqrt(Math.Pow(frame.position.Y - ent.GetPosition().Y, 2.0) + Math.Pow(frame.position.Z - ent.GetPosition().Z, 2.0));
-                    var v = 0.0004 * 2.0 * Math.PI*distfromaxis;
-                    Vector3D dir = ent.GetPosition() - frame.position;
-                    dir.X = 0;
-                    ent.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, (dir * ((v * v) / distfromaxis) * ent.Physics.Mass), ent.GetPosition(), Vector3D.Zero );
-                    
-                    ent.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, (2.0 * ent.Physics.Mass * 0.0004* (Vector3D)ent.Physics.LinearVelocity), ent.GetPosition(), Vector3D.Zero);
+                    //ent.PositionComp.SetPosition(ent.PositionComp.GetPosition() + frame.velocity);
+                    MatrixD test =  MatrixD.CreateTranslation(frame.velocity);
+                    //ent.PositionComp.UpdateWorldMatrix(ref test);
+                    ent.WorldMatrix *= test;
                 }
 
-                //frame.position += Vector3D.Forward;
+                frame.position += frame.velocity;
             }
 
 
@@ -162,8 +150,6 @@ namespace nubeees_refFrame
 
         private void AdminCommandHandler(ushort handlerID, byte[] package, ulong steamID, bool fromServer)
         {
-            Util.DebugMessage("Serverside received");
-            return;
             Command command = MyAPIGateway.Utilities.SerializeFromXML<Command>(Encoding.Unicode.GetString(package));
 
             // Get the sender player.
