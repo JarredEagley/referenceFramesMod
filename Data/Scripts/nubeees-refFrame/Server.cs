@@ -61,13 +61,6 @@ namespace nubeees_refFrame
 
                     UpdateFast();
 
-                    // Dumb loop for now. TO-DO: Prioritization.
-                    /*foreach (ReferenceFrame frame in referenceFrames)
-                    {
-                        frame.Update();
-                    }*/
-
-
                     if (tick % 10 == 0) Update10();
 
                     if (tick > 100)
@@ -87,12 +80,46 @@ namespace nubeees_refFrame
 
         private void UpdateFast()
         {
-            // ...
+            // Dumb loop for now. TO-DO: Prioritization.
+            foreach (ReferenceFrame frame in referenceFrames)
+            {
+                // literally just the draw loop now. Will probably be tossed out later.
+                //frame.Update();
+            }
         }
 
         private void Update10()
         {
             // ...
+            foreach (ReferenceFrame frame in referenceFrames)
+            {
+                var bound = new BoundingSphereD(frame.position, frame.radius);
+                List<IMyEntity> entitiesinrange = MyAPIGateway.Entities.GetTopMostEntitiesInSphere(ref bound);
+
+                MatrixD testrotationmtx = MatrixD.CreateRotationX(0.0004);
+                MatrixD testtranslmtx = MatrixD.CreateTranslation(frame.position);
+                MatrixD testinvtrans = MatrixD.Invert(testtranslmtx);
+
+                foreach(var ent in entitiesinrange)
+                {
+                    //ent.PositionComp.SetPosition(ent.PositionComp.GetPosition() + new Vector3D(0.0,0.0,1.0));
+
+                    ent.WorldMatrix *= testtranslmtx * testrotationmtx * testinvtrans;
+                    ent.WorldMatrix.Orthogonalize();
+
+                    var distfromaxis = Math.Sqrt(Math.Pow(frame.position.Y - ent.GetPosition().Y, 2.0) + Math.Pow(frame.position.Z - ent.GetPosition().Z, 2.0));
+                    var v = 0.0004 * 2.0 * Math.PI*distfromaxis;
+                    Vector3D dir = ent.GetPosition() - frame.position;
+                    dir.X = 0;
+                    ent.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, (dir * ((v * v) / distfromaxis) * ent.Physics.Mass), ent.GetPosition(), Vector3D.Zero );
+                    
+                    ent.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, (2.0 * ent.Physics.Mass * 0.0004* (Vector3D)ent.Physics.LinearVelocity), ent.GetPosition(), Vector3D.Zero);
+                }
+
+                //frame.position += Vector3D.Forward;
+            }
+
+
         }
 
         private void Update100()
@@ -101,7 +128,7 @@ namespace nubeees_refFrame
             // Try to avoid using data structures that can cause the dreaded second-long-pause every few frames, ie what used to happen w/ weaponcore.
             return; // /!\ //
 
-            // Merging behavior
+/*            // Merging behavior
             for (int i = 0; i < referenceFrames.Count-1; i++)
             {
                 for (int j = i+1; j < referenceFrames.Count; j++)
@@ -118,7 +145,7 @@ namespace nubeees_refFrame
                         // Not intersecting. Do nothing.
                     }
                 }
-            }
+            }*/
         }
 
         private void AdminCommandHandler(ushort handlerID, byte[] package, ulong steamID, bool fromServer)
@@ -141,17 +168,41 @@ namespace nubeees_refFrame
                         Vector3D framePos = new Vector3D(Double.Parse(command.contentArr[1]), Double.Parse(command.contentArr[2]), Double.Parse(command.contentArr[3]));
                         Vector3D frameVel = new Vector3D(Double.Parse(command.contentArr[4]), Double.Parse(command.contentArr[5]), Double.Parse(command.contentArr[6]));
                         float radius = float.Parse(command.contentArr[7]);
-                        referenceFrames.Add(new ReferenceFrame(senderPlayer.GetPosition() + framePos, frameVel, radius));
+
+                        referenceFrames.Add(new ReferenceFrame(senderPlayer.Character.GetPosition() + framePos, frameVel, radius));
+                        Util.DebugMessage("CreateFrame operation done: pos: " +framePos + ", vel: " + frameVel + ", radius: " + radius);
                     }
                     break;
-                case "makeVelocityFake":
+                case "makevelocityfake":
                     // Need to find player's frameentity for this.
                     break;
-                case "makeVelocityReal":
+                case "makevelocityreal":
                     break;
+                case "bumpme":
+                    {
+                        if (command.contentArr.Count < 3) break;
+                        Vector3D bump = new Vector3D(Double.Parse(command.contentArr[1]), Double.Parse(command.contentArr[2]), Double.Parse(command.contentArr[3]));
+                        Vector3D characterpos = senderPlayer.Character.GetPosition();
+                        Util.DebugMessage("[VERSION 2] Bumped character at " + senderPlayer.Character.GetPosition() + " by " + bump);
+                        senderPlayer.Character.SetPosition(characterpos + bump);
+                        Util.DebugMessage("New position is " + senderPlayer.Character.GetPosition());
+                    }
+                    break;
+                case "teleport":
+                    {
+                        if (command.contentArr.Count < 3) break;
+                        Vector3D bump = new Vector3D(Double.Parse(command.contentArr[1]), Double.Parse(command.contentArr[2]), Double.Parse(command.contentArr[3]));
+                        senderPlayer.Character.SetPosition(bump);
+                    }
+                    break;
+                case "where":
+                    {
+                        Util.DebugMessage(""+senderPlayer.Character.GetPosition());
+                    }
+                    break;
+                default:break;
             }
         }
-
 
 
         private bool IntersectSphere(ReferenceFrame frame1, ReferenceFrame frame2)

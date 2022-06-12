@@ -35,6 +35,7 @@ namespace nubeees_refFrame
         // Constructors
         public ReferenceFrame(Vector3D pos, Vector3D vel, float _radius)
         {
+            Util.DebugMessage("Reference frame constructed.");
             this.radius = _radius;
             this.position = pos;
             this.velocity = vel;
@@ -42,6 +43,7 @@ namespace nubeees_refFrame
 
         public ReferenceFrame(IMyEntity parent, float _radius)
         {
+            Util.DebugMessage("Reference frame constructed.");
             //this.parentEntity = parent;
             this.radius = _radius;
         }
@@ -54,13 +56,6 @@ namespace nubeees_refFrame
         public void Update()
         {
             Util.DrawDebugSphere(this.position, this.radius);
-
-            // Determine what is in range.
-
-            // Do any necessary merging. ?? Might belong in server.cs...
-
-            // Perform pseudophysics integrations.
-            Integrate();
         }
 
         private void FindEntitiesInRange()
@@ -100,85 +95,8 @@ namespace nubeees_refFrame
              */
 
 
-            BoundingSphereD bounds = new BoundingSphereD(position, radius); 
+            BoundingSphereD bounds = new BoundingSphereD(position, radius);
             effectedEntities = MyAPIGateway.Entities.GetTopMostEntitiesInSphere(ref bounds); // Don't need to get individual blocks.
-        }
-
-        /// <summary>
-        /// Perform physics integrations on this reference frame. Uses own delta-time in order to account for slow 'LOD' updating.
-        /// Logic will be slightly different with/without effector entities.
-        /// </summary>
-        private void Integrate()
-        {
-            // If no effectors, follow a newtonian trajectory. No accounting for gravity yet.
-            if (effectorEntities.Count == 0)
-            {
-                deltaPositon = velocity * VRage.Game.MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-                position += deltaPositon;
-            }
-            // If effectors exist, average their position and velocity. TO-DO: THIS IS TOTALLY BROKEN!!! Averaging position will work but velocity not.
-            else 
-            {
-                Util.DebugMessage("This should not execute.");
-                // /!\ THIS IS ALL BROKEN CODE /!\ //
-
-
-                var oldPosition = position;
-                var oldVelocity = velocity;
-
-                // Average out effector data.
-                position = Vector3D.Zero;
-                velocity = Vector3D.Zero;
-
-                float temp = 0.0f; // Could be an int, but don't want to even think about integer division problems.
-                foreach (var effector in this.effectorEntities)
-                {
-                    if (effector.entity.Physics == null)
-                        continue;
-
-                    this.position += effector.entity.GetPosition();
-                    this.velocity += effector.apparentVelocity;
-                    temp += 1.0f;
-                }
-                // Sanity check against division by zero.
-                if (temp > 0.0f)
-                {
-                    this.position /= temp;
-                    this.velocity /= temp;
-                }
-
-                // A bit backwards-- find the deltas.
-                deltaPositon = position - oldPosition;
-                deltaVelocity = velocity - oldVelocity;
-            }
-
-            FindEntitiesInRange(); // Might want to slow update this.
-            IntegrateHelper_UpdateEntities();
-        }
-
-        /// <summary>
-        /// Helper function for integration which applies position and velocity updates to all effected entities.
-        /// </summary>
-        private void IntegrateHelper_UpdateEntities()
-        {
-
-            foreach (var entity in effectedEntities)
-            {
-                entity.SetPosition(entity.GetPosition() + (velocity * VRage.Game.MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS));
-            }
-
-            return;
-            foreach (var entity in effectedEntities)
-            {
-                var entPosition = entity.GetPosition();
-                entity.SetPosition(entPosition - deltaPositon);
-
-                // Physics sanity check.
-                if (entity.Physics == null)
-                    continue;
-
-                entity.Physics.LinearVelocity -= deltaVelocity;
-            }
         }
 
 
