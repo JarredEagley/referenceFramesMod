@@ -23,8 +23,7 @@ namespace nubeees_refFrame
     {
         public List<ReferenceFrame> referenceFrames = new List<ReferenceFrame>(); // Everything lumped into one list right now. Suffling to be done in the future. Priority system will be needed.
 
-        private uint counter = 0;
-        private const uint updateSlowTime = 100;
+        private uint tick = 0;
 
         private bool isInitialized = false;
 
@@ -60,19 +59,24 @@ namespace nubeees_refFrame
                     if (referenceFrames.Count == 0)
                         return;
 
+                    UpdateFast();
+
                     // Dumb loop for now. TO-DO: Prioritization.
-                    foreach (ReferenceFrame frame in referenceFrames)
+                    /*foreach (ReferenceFrame frame in referenceFrames)
                     {
                         frame.Update();
-                    }
+                    }*/
 
 
-                    counter++;
-                    if (counter > updateSlowTime)
+                    if (tick % 10 == 0) Update10();
+
+                    if (tick > 100)
                     {
-                        UpdateSlow();
-                        counter = 0;
+                        Update100();
+                        tick = 0;
                     }
+
+                    tick++;
                 }
             }
             catch (Exception e)
@@ -81,7 +85,17 @@ namespace nubeees_refFrame
             }
         }
 
-        private void UpdateSlow()
+        private void UpdateFast()
+        {
+            // ...
+        }
+
+        private void Update10()
+        {
+            // ...
+        }
+
+        private void Update100()
         {
             // TO-DO: Priority list reshuffling will happen here. Maybe use a queue/request kind of system.
             // Try to avoid using data structures that can cause the dreaded second-long-pause every few frames, ie what used to happen w/ weaponcore.
