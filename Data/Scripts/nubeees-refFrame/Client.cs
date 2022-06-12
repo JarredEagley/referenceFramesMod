@@ -23,6 +23,12 @@ namespace nubeees_refFrame
             MyAPIGateway.Utilities.MessageEnteredSender += onMessageEntered;
         }
 
+        protected override void UnloadData()
+        {
+            base.UnloadData();
+            MyAPIGateway.Utilities.MessageEnteredSender -= onMessageEntered;
+        }
+
         public override void UpdateAfterSimulation()
         {
             if (MyAPIGateway.Session == null) return;
@@ -59,6 +65,7 @@ namespace nubeees_refFrame
 
             Command cmd = new Command(sender, words[0]);
             cmd.contentArr = new List<string>(words);
+
             string msg = MyAPIGateway.Utilities.SerializeToXML<Command>(cmd);
             MyAPIGateway.Multiplayer.SendMessageToServer(Util.MOD_ID, Encoding.Unicode.GetBytes(msg));
         }
