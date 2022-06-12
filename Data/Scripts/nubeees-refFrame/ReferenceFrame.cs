@@ -19,7 +19,7 @@ namespace nubeees_refFrame
         public uint updatePriority = 0;
 
         public List<IMyEntity> effectedEntities = new List<IMyEntity>();   
-        public List<EffectorEntity> effectorEntities = new List<EffectorEntity>();  // Entities which help define the reference frame. Can be empty. 
+        public List<FrameEntity> effectorEntities = new List<FrameEntity>();  // Entities which help define the reference frame. Can be empty. 
 
         // No acceleration terms yet.
 
@@ -192,16 +192,16 @@ namespace nubeees_refFrame
             if (isEffector)
             {
                 // Add as an effector too.
-                EffectorEntity effectorEntity = new EffectorEntity(entity, 100); // RADIUS?? THIS WAS NEVER THOUGHT THROUGH TOO WELL
+                FrameEntity effectorEntity = new FrameEntity(entity, 100); // RADIUS?? THIS WAS NEVER THOUGHT THROUGH TOO WELL
                 this.effectorEntities.Add(effectorEntity);
             }
         }
-        public void AddToReferenceFrame(EffectorEntity entity, bool isEffector = false)
+        public void AddToReferenceFrame(FrameEntity entity, bool isEffector = false)
         {
             // TODO
         }
 
-        public bool RemoveFromReferenceFrame(EffectorEntity effectorEntity)
+        public bool RemoveFromReferenceFrame(FrameEntity effectorEntity)
         {
             // Always make sure its removed from effectors.
             effectorEntities.Remove(effectorEntity); // Just in case. Less efficient, though.
