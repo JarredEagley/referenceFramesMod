@@ -12,7 +12,7 @@ namespace nubeees_refFrame
 {
     // Structure mimicked from dailyneeds. I had to learn somewhere afterall!
 
-    [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
+    [ MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     class Client : MySessionComponentBase
     {
         private bool isInitialized = false;
@@ -61,23 +61,39 @@ namespace nubeees_refFrame
             switch (words[0])
             {
                 case "createframe":
-                    Vector3D framePosition;
-                    Vector3D frameVelocity;
+                    {
+                        Vector3D framePosition;
+                        Vector3D frameVelocity;
 
-                    framePosition.X = Double.Parse(words[1]);
-                    framePosition.Y = Double.Parse(words[2]);
-                    framePosition.Z = Double.Parse(words[3]);
+                        framePosition.X = Double.Parse(words[1]);
+                        framePosition.Y = Double.Parse(words[2]);
+                        framePosition.Z = Double.Parse(words[3]);
 
-                    frameVelocity.X = Double.Parse(words[4]);
-                    frameVelocity.Y = Double.Parse(words[5]);
-                    frameVelocity.Z = Double.Parse(words[6]);
+                        frameVelocity.X = Double.Parse(words[4]);
+                        frameVelocity.Y = Double.Parse(words[5]);
+                        frameVelocity.Z = Double.Parse(words[6]);
 
-                    float frameRadius = float.Parse(words[7]);
+                        float frameRadius = float.Parse(words[7]);
 
-                    CreateFrameCommand cmd = new CreateFrameCommand(sender, words[0], framePosition, frameVelocity, frameRadius);
+                        CreateFrameCommand cmd = new CreateFrameCommand(sender, words[0], framePosition, frameVelocity, frameRadius);
                     
-                    string message = MyAPIGateway.Utilities.SerializeToXML<CreateFrameCommand>(cmd);
-                    MyAPIGateway.Multiplayer.SendMessageToServer(Util.MOD_ID, Encoding.Unicode.GetBytes(message));
+                        string msg = MyAPIGateway.Utilities.SerializeToXML<CreateFrameCommand>(cmd);
+                        MyAPIGateway.Multiplayer.SendMessageToServer(Util.MOD_ID, Encoding.Unicode.GetBytes(msg));
+                    }
+                    break;
+                case "makevelocityreal":
+                    {
+                        Command cmd = new Command(sender, words[0]);
+                        string msg = MyAPIGateway.Utilities.SerializeToXML<Command>(cmd);
+                        MyAPIGateway.Multiplayer.SendMessageToServer(Util.MOD_ID, Encoding.Unicode.GetBytes(msg));
+                    }
+                    break;
+                case "makevelocityfake":
+                    {
+                        Command cmd = new Command(sender, words[0]);
+                        string msg = MyAPIGateway.Utilities.SerializeToXML<Command>(cmd);
+                        MyAPIGateway.Multiplayer.SendMessageToServer(Util.MOD_ID, Encoding.Unicode.GetBytes(msg));
+                    }
                     break;
             }
         }
