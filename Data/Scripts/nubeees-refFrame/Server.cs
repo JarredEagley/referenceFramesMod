@@ -123,22 +123,24 @@ namespace nubeees_refFrame
 
         private void AdminCommandHandler(ushort handlerID, byte[] package, ulong steamID, bool fromServer)
         {
-            CreateFrameCommand command = MyAPIGateway.Utilities.SerializeFromXML<CreateFrameCommand>(Encoding.Unicode.GetString(package));
+            Command command = MyAPIGateway.Utilities.SerializeFromXML<Command>(Encoding.Unicode.GetString(package));
 
-            var playerList = new List<IMyPlayer>();
-            MyAPIGateway.Players.GetPlayers(playerList, (IMyPlayer player)=>{ return player.SteamUserId == steamID; });
+            if (command is CreateFrameCommand) Util.DebugMessage("Test!");
+            else
+                Util.DebugMessage("Test 2");
 
-            Util.DebugMessage("!TEST!: " + (fromServer ? "from server" : "not from server"));
+
+            // CreateFrameCommand command = MyAPIGateway.Utilities.SerializeFromXML<CreateFrameCommand>(Encoding.Unicode.GetString(package));
+
+            // var playerList = new List<IMyPlayer>();
+            // MyAPIGateway.Players.GetPlayers(playerList, (IMyPlayer player)=>{ return player.SteamUserId == steamID; });
 
             // Vector3D playerPos = playerList[0].Character.GetPosition();
 
             // Util.DrawDebugSphere(command.position, 100.0f);
-            referenceFrames.Add(new ReferenceFrame(command.position, Vector3D.Forward, 100.0f));
-            Util.DebugMessage("Added new reference frame to the list!");
-
-            
-            Util.DebugMessage("____________________DONE_______________");
         }
+
+
 
         private bool IntersectSphere(ReferenceFrame frame1, ReferenceFrame frame2)
         {
