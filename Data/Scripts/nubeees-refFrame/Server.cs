@@ -125,19 +125,31 @@ namespace nubeees_refFrame
         {
             Command command = MyAPIGateway.Utilities.SerializeFromXML<Command>(Encoding.Unicode.GetString(package));
 
-            if (command is CreateFrameCommand) Util.DebugMessage("Test!");
-            else
-                Util.DebugMessage("Test 2");
+            // Get the sender player.
+            var playerList = new List<IMyPlayer>();
+            MyAPIGateway.Players.GetPlayers(playerList, (IMyPlayer player) => { return player.SteamUserId == steamID; });
+            var senderPlayer = playerList[0];
 
-
-            // CreateFrameCommand command = MyAPIGateway.Utilities.SerializeFromXML<CreateFrameCommand>(Encoding.Unicode.GetString(package));
-
-            // var playerList = new List<IMyPlayer>();
-            // MyAPIGateway.Players.GetPlayers(playerList, (IMyPlayer player)=>{ return player.SteamUserId == steamID; });
-
-            // Vector3D playerPos = playerList[0].Character.GetPosition();
-
-            // Util.DrawDebugSphere(command.position, 100.0f);
+            switch (command.content)
+            {
+                case "createframe":
+                    {
+                        // Util.DebugMessage("CreateFrame()");
+                        if (command.contentArr.Count < 7)
+                            break;
+                        // I'll use relative coordinates for convenience.
+                        Vector3D framePos = new Vector3D(Double.Parse(command.contentArr[1]), Double.Parse(command.contentArr[2]), Double.Parse(command.contentArr[3]));
+                        Vector3D frameVel = new Vector3D(Double.Parse(command.contentArr[4]), Double.Parse(command.contentArr[5]), Double.Parse(command.contentArr[6]));
+                        float radius = float.Parse(command.contentArr[7]);
+                        referenceFrames.Add(new ReferenceFrame(senderPlayer.GetPosition() + framePos, frameVel, radius));
+                    }
+                    break;
+                case "makeVelocityFake":
+                    // Need to find player's frameentity for this.
+                    break;
+                case "makeVelocityReal":
+                    break;
+            }
         }
 
 

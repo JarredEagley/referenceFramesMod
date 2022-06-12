@@ -1,4 +1,4 @@
-﻿using VRageMath;
+﻿using System.Collections.Generic;
 
 namespace nubeees_refFrame
 {
@@ -10,6 +10,7 @@ namespace nubeees_refFrame
     {
         public ulong sender;
         public string content;
+        public List<string> contentArr;
 
         public Command()
         {
@@ -20,25 +21,4 @@ namespace nubeees_refFrame
             this.content = content;
         }
     }
-
-    public class CreateFrameCommand : Command
-    {
-        public Vector3D position;
-        public Vector3D velocity;
-        public float radius;
-        
-        public CreateFrameCommand() 
-        { 
-        }
-
-        public CreateFrameCommand(ulong _sender, string _content, Vector3D _position, Vector3D _velocity, float _radius)
-        {
-            sender = _sender;
-            content = _content;
-            position = _position;
-            velocity = _velocity;
-            radius = _radius;
-        }
-    }
-
 }
