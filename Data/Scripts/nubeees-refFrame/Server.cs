@@ -15,6 +15,7 @@ using Sandbox;
 using SpaceEngineers;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using Sandbox.Engine.Physics;
 
 namespace nubeees_refFrame
 {
@@ -27,6 +28,7 @@ namespace nubeees_refFrame
 
         private bool isInitialized = false;
 
+        private bool IGNOREPLAYER = false;
 
         public override void LoadData()
         {
@@ -106,15 +108,66 @@ namespace nubeees_refFrame
             foreach (ReferenceFrame frame in referenceFrames)
             {
                 var bound = new BoundingSphereD(frame.position, frame.radius);
-                List<IMyEntity> entitiesinrange = MyAPIGateway.Entities.GetEntitiesInSphere(ref bound);
+                List<IMyEntity> entitiesinrange = MyAPIGateway.Entities.GetTopMostEntitiesInSphere(ref bound);
+                List<IMyCharacter> charactersInRange = new List<IMyCharacter>();
+                List<Vector3D> characterVectors = new List<Vector3D>();
 
-                foreach(var ent in entitiesinrange)
+                List<IMyEntity> nonCharacterEntities = new List<IMyEntity>();
+                foreach (var ent in entitiesinrange) 
                 {
-                    //ent.PositionComp.SetPosition(ent.PositionComp.GetPosition() + frame.velocity);
-                    MatrixD test =  MatrixD.CreateTranslation(frame.velocity);
-                    //ent.PositionComp.UpdateWorldMatrix(ref test);
-                    ent.WorldMatrix *= test;
+                    if (ent is IMyCharacter) 
+                    { 
+                        charactersInRange.Add(ent as IMyCharacter);
+                        characterVectors.Add(new Vector3D(ent.GetPosition()));
+                    }
+                    else 
+                    { nonCharacterEntities.Add(ent); 
+                    }
                 }
+
+
+                foreach(var ent in nonCharacterEntities)
+                {
+                    MatrixD movementMatrix = ent.PositionComp.WorldMatrixRef * MatrixD.CreateTranslation(frame.velocity);
+                    ent.Teleport(movementMatrix, null, false);
+                }
+
+
+                //foreach (var character in charactersInRange)
+                for (int i = 0; i < charactersInRange.Count; ++i)
+                {
+                    var character = charactersInRange[i];
+                    var previousPosition = characterVectors[i];
+
+                    bool isStandingOnDynamic = false;
+                    var tempList = new List<IMyEntity>();
+                    var bs = new BoundingSphereD(character.GetPosition(), 1.0);
+                    MyAPIGateway.Entities.GetTopMostEntitiesInSphere(ref bs);
+                    foreach (var temp in tempList)
+                    {
+                        if (temp is IMyCubeGrid)
+                        {
+                            isStandingOnDynamic = !(temp as IMyCubeGrid).IsStatic;
+                            break;
+                        }
+                        else if (temp is IMySlimBlock)
+                        {
+                            var block = temp as IMySlimBlock;
+                            isStandingOnDynamic = !block.CubeGrid.IsStatic;
+                            break;
+                        }
+                    }
+
+                    character.Physics.UpdateFromSystem();
+
+                    if (IGNOREPLAYER) break;
+                    if (previousPosition != character.PositionComp.GetPosition()) break;
+
+                    MatrixD movementMatrix = character.PositionComp.WorldMatrixRef * MatrixD.CreateTranslation(frame.velocity );
+                    character.Teleport(movementMatrix);
+                }
+
+
 
                 frame.position += frame.velocity;
             }
@@ -200,6 +253,35 @@ namespace nubeees_refFrame
                         Util.DebugMessage(""+senderPlayer.Character.GetPosition());
                     }
                     break;
+                case "ignoreme":
+                    {
+                        IGNOREPLAYER = !IGNOREPLAYER;
+                    }
+                    break;
+                case "teleportgrid":
+                    {
+                        if (command.contentArr.Count < 3) break;
+                        Vector3D bump = new Vector3D(Double.Parse(command.contentArr[1]), Double.Parse(command.contentArr[2]), Double.Parse(command.contentArr[3]));
+                        MatrixD bumpMatrix = MatrixD.CreateTranslation(bump);
+                        Util.DebugMessage("Teleporting closest grid to " + bump);
+                        var sphere = new BoundingSphereD(senderPlayer.GetPosition(), 1.0);
+                        var entlist = MyAPIGateway.Entities.GetTopMostEntitiesInSphere(ref sphere);
+                        foreach (var ent in entlist)
+                        {
+                            if (ent is IMyCubeGrid)
+                            {
+                                ent.Teleport(bumpMatrix);
+                                return;
+                            }
+                            else if (ent is IMySlimBlock)
+                            {
+                                var block = ent as IMySlimBlock;
+                                block.CubeGrid.Teleport(bumpMatrix);
+                                return;
+                            }
+                        }
+                        break;
+                    }
                 default:break;
             }
         }

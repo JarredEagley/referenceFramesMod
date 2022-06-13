@@ -7,6 +7,9 @@ using VRage.Game;
 using VRage.Game.Components;
 using Sandbox.ModAPI;
 using VRageMath;
+using VRage.Game.ModAPI;
+using VRage.ModAPI;
+using Sandbox.Engine.Physics;
 
 namespace nubeees_refFrame
 {
@@ -33,13 +36,28 @@ namespace nubeees_refFrame
         {
             if (MyAPIGateway.Session == null) return;
 
+            bool isHost = MyAPIGateway.Session.OnlineMode == MyOnlineModeEnum.OFFLINE || MyAPIGateway.Multiplayer.IsServer;
+            bool isDedicatedHost = isHost && MyAPIGateway.Utilities.IsDedicated;
+            if (isDedicatedHost) return;
+
+            // TESTING //
+            /*
             try
             {
-                bool isHost = MyAPIGateway.Session.OnlineMode == MyOnlineModeEnum.OFFLINE || MyAPIGateway.Multiplayer.IsServer;
-                bool isDedicatedHost = isHost && MyAPIGateway.Utilities.IsDedicated;
+                var playerList = new List<IMyPlayer>();
+                MyAPIGateway.Players.GetPlayers(playerList, (IMyPlayer player) => { return player.SteamUserId == MyAPIGateway.Multiplayer.MyId; });
+                var senderPlayer = playerList[0];
+                var myCharacter = senderPlayer.Character;
+                bool hasparent = myCharacter.Entity;
+                MyAPIGateway.
 
-                if (isDedicatedHost) return;
+                MyAPIGateway.Utilities.ShowNotification(""+hasparent, 10);
+            }
+            catch (Exception e) { }
+            */
 
+            try
+            {
                 if (!isInitialized)
                 {
                     MyAPIGateway.Utilities.SendMessage("Initializing client");
