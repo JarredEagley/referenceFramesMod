@@ -24,6 +24,8 @@ namespace nubeees_refFrame
     {
         public List<ReferenceFrame> referenceFrames = new List<ReferenceFrame>(); // Everything lumped into one list right now. Suffling to be done in the future. Priority system will be needed.
 
+        public List<spintest> spinnyvoxels = new List<spintest>();
+
         private uint tick = 0;
 
         private bool isInitialized = false;
@@ -33,24 +35,26 @@ namespace nubeees_refFrame
         public override void LoadData()
         {
             base.LoadData();
-
         }
 
         protected override void UnloadData()
         {
             base.UnloadData();
             MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(Util.MOD_ID, AdminCommandHandler);
+            MyAPIGateway.Entities.OnEntityAdd -= EntityAddHandler;
         }
 
         private void Init()
         {
             MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(Util.MOD_ID, AdminCommandHandler);
+            MyAPIGateway.Entities.OnEntityAdd += EntityAddHandler;
             Util.DebugMessage("Server init done!");
         }
 
 
         public override void UpdateBeforeSimulation()
         {
+
             if (MyAPIGateway.Session == null)
                 return;
 
@@ -70,8 +74,8 @@ namespace nubeees_refFrame
                     }
 
                     // Note to self: Consider parallelism.
-                    if (referenceFrames.Count == 0)
-                        return;
+                    //if (referenceFrames.Count == 0)
+                    //    return;
 
                     UpdateFast();
 
@@ -94,6 +98,9 @@ namespace nubeees_refFrame
 
         private void UpdateFast()
         {
+            MyAPIGateway.Utilities.ShowNotification("there are this many spinnies: " + spinnyvoxels.Count, 10);
+            foreach (var foo in spinnyvoxels) foo.Update();
+
             // Dumb loop for now. TO-DO: Prioritization.
             foreach (ReferenceFrame frame in referenceFrames)
             {
@@ -177,6 +184,8 @@ namespace nubeees_refFrame
 
         private void Update100()
         {
+            foreach (var foo in spinnyvoxels) foo.UpdateSlow();
+
             // TO-DO: Priority list reshuffling will happen here. Maybe use a queue/request kind of system.
             // Try to avoid using data structures that can cause the dreaded second-long-pause every few frames, ie what used to happen w/ weaponcore.
             return; // /!\ //
@@ -199,6 +208,15 @@ namespace nubeees_refFrame
                     }
                 }
             }*/
+        }
+
+        private void EntityAddHandler(IMyEntity ent)
+        {
+            if (ent is IMyVoxelMap)
+            {
+                var foo = new spintest(ent as IMyVoxelMap);
+                spinnyvoxels.Add(foo);
+            }
         }
 
         private void AdminCommandHandler(ushort handlerID, byte[] package, ulong steamID, bool fromServer)
