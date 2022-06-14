@@ -18,8 +18,13 @@ namespace nubeees_refFrame
     class spintest
     {
         IMyVoxelMap voxel;
+
+        Vector3D centerOfRotation;
+        Vector3D rotationVector;
+
         MatrixD rotationMatrix;
         List<IMyEntity> entitiesInRange = new List<IMyEntity>();
+
 
         public spintest(IMyVoxelMap _voxel)
         {
@@ -30,13 +35,13 @@ namespace nubeees_refFrame
 
         public void Init()
         {
-            Vector3D rotationAxis = new Vector3D(1, 1, 1); rotationAxis.Normalize();
+            rotationVector = new Vector3D(1, 1, 1); rotationVector.Normalize();
 
-            Vector3D COM = voxel.PositionComp.GetPosition();
-            MatrixD translate = MatrixD.CreateTranslation(COM);
+            centerOfRotation = voxel.PositionComp.GetPosition();
+            MatrixD translate = MatrixD.CreateTranslation(centerOfRotation);
             MatrixD translateinv = MatrixD.Invert(translate);
 
-            rotationMatrix = translateinv * MatrixD.CreateFromAxisAngle(rotationAxis, 0.004) * translate;
+            rotationMatrix = translateinv * MatrixD.CreateFromAxisAngle(rotationVector, 0.004) * translate;
         }
 
         public void Update()
@@ -46,6 +51,20 @@ namespace nubeees_refFrame
             foreach (var entity in entitiesInRange)
             {
                 entity.Teleport(entity.WorldMatrix * rotationMatrix);
+                if (entity is IMyCharacter)
+                {
+                    var character = entity as IMyCharacter;
+                    // just pointing toward center for now.
+                    var axisDisplacement = centerOfRotation - entity.GetPosition();
+                    
+                    if (character.CurrentMovementState == MyCharacterMovementEnum.Falling)
+                    {
+                        Vector3D rotateCharacter = Vector3D.Cross(axisDisplacement, character.WorldMatrix.Up);
+                        var tr = MatrixD.CreateTranslation(character.GetPosition());
+                        character.Teleport(MatrixD.Orthogonalize( character.WorldMatrix * MatrixD.Invert(tr) * MatrixD.CreateFromAxisAngle(rotateCharacter, 0.0001) * tr ));
+
+                    }
+                }
             }
         }
 
